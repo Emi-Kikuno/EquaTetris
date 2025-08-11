@@ -215,29 +215,8 @@ const BLOCK_SIZE = 30;
 const COLORS = ["cyan", "yellow", "purple", "green", "red", "blue", "orange"];
 const OPERATORS = ["+", "-", "×", "÷"];
 let totalLines = 0;
-const LEVEL_SPEEDS = [
-  650, // Level 1
-  620, // Level 2  (-30)
-  590, // Level 3  (-30)
-  550, // Level 4  (-40)
-  500, // Level 5  (-50)
-  450, // Level 6  (-50)
-  400, // Level 7  (-50)
-  350, // Level 8  (-50)
-  300, // Level 9  (-50)
-  250, // Level 10 (-50)
-  240, // Level 11 (-10)
-  230, // Level 12 (-10)
-  220, // Level 13 (-10)
-  210, // Level 14 (-10)
-  200  // Level 15 (-10)
-]; // ms/drop
-function getLinesPerLevel(level) {
-  if (level < 5) return 8;   // Early game
-  if (level < 10) return 10; // Mid game
-  return 12;                 // Late game
-}
-
+const LEVEL_SPEEDS = [630, 600, 570, 540, 510, 480, 450, 420, 390, 360, 330, 300, 270, 250]; // ms/drop
+const LINES_PER_LEVEL = 12;
 
 const SHAPES = {
   I: [[1, 1, 1, 1]],
@@ -277,7 +256,6 @@ const exitToast = document.getElementById("exit-toast");
 
 function applyLevel(){
   const sp = LEVEL_SPEEDS[Math.min(level-1, LEVEL_SPEEDS.length-1)];
-  console.log('LEVEL UP →', level, 'drop every', sp,'ms');   // <— debug
   dropInterval = sp;
   document.getElementById('level').textContent = `Level: ${level}`;
   document.getElementById('speed').textContent = `Speed: ${(sp/1000).toFixed(2)}s`;
@@ -457,13 +435,13 @@ function clearLines(){
     score += linesCleared * 100;
     document.getElementById("score").textContent = `Score: ${score}`;
 
-totalLines += linesCleared;
-console.log('Lines total:', totalLines, 'needed:', level * getLinesPerLevel(level));
-while (totalLines >= level * getLinesPerLevel(level)) {
-  level++;
-  applyLevel();
+    totalLines += linesCleared;
+    while (totalLines >= level * LINES_PER_LEVEL) {
+      level++;
+      applyLevel();
+    }
+  }
 }
-
 
 
 
@@ -759,6 +737,3 @@ function debugPrintField(){
 
 </body>
 </html>
-
-
-
