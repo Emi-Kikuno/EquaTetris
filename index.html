@@ -61,6 +61,21 @@
   </div>
 </div>
 
+<!-- Leaderboard / Game Over Toast -->
+<div id="lb-toast" class="toast hidden">
+  <div id="lb-title">Game Over</div>
+  <div id="lb-entry">
+    <label>Enter name:</label>
+    <input id="lb-name" maxlength="12" placeholder="Player">
+    <button id="lb-save">Save Score</button>
+  </div>
+  <div id="lb-list"></div>
+  <div style="margin-top:8px;display:flex;gap:8px;justify-content:center;">
+    <button id="lb-restart">Play Again</button>
+    <button id="lb-clear">Clear Leaderboard</button>
+    <button id="lb-close">Close</button>
+  </div>
+</div>
 
 <style>
 body {
@@ -136,6 +151,10 @@ background:#000;}
 .toast.hidden {
   display: none;
 }
+#lb-list { text-align:left; margin-top:8px; font-size:14px; }
+#lb-list ol { padding-left:18px; margin:6px 0; }
+#lb-entry { display:flex; gap:6px; justify-content:center; margin-top:6px; }
+#lb-entry input { width:120px; padding:6px; border-radius:6px; border:none; }
 
 #numpad {
   display: grid;
@@ -215,8 +234,8 @@ const BLOCK_SIZE = 30;
 const COLORS = ["cyan", "yellow", "purple", "green", "red", "blue", "orange"];
 const OPERATORS = ["+", "-", "×", "÷"];
 let totalLines = 0;
-const LEVEL_SPEEDS = [650, 600, 550, 500, 510, 480, 450, 420, 390, 360, 330, 300, 270, 250, 230, 220, 200]; // ms/drop
-const LINES_PER_LEVEL = 5;
+const LEVEL_SPEEDS = [630, 600, 550, 500, 470, 440, 410, 390, 370, 350, 330, 310, 290, 280, 270, 260, 250, 240, 230, 220, 210, 200]; // ms/drop
+const LINES_PER_LEVEL = 10;
 
 const SHAPES = {
   I: [[1, 1, 1, 1]],
@@ -260,6 +279,34 @@ function applyLevel(){
   document.getElementById('level').textContent = `Level: ${level}`;
   document.getElementById('speed').textContent = `Speed: ${(sp/1000).toFixed(2)}s`;
 }
+const LB_KEY = 'equatris.leaderboard';
+
+function lbLoad(){
+  try { return JSON.parse(localStorage.getItem(LB_KEY)) || []; }
+  catch { return []; }
+}
+function lbSave(list){ localStorage.setItem(LB_KEY, JSON.stringify(list)); }
+
+function lbAdd(name, score){
+  const list = lbLoad();
+  list.push({name: name?.trim() || 'Player', score, ts: Date.now()});
+  list.sort((a,b)=> b.score - a.score || a.ts - b.ts);
+  lbSave(list.slice(0,10)); // keep top 10
+}
+
+function lbRender(){
+  const list = lbLoad();
+  const wrap = document.getElementById('lb-list');
+  if (!list.length){ wrap.innerHTML = '<p>No scores yet.</p>'; return; }
+  const items = list.map((e,i)=> `<li>#${i+1} — ${e.name} : <b>${e.score}</b></li>`).join('');
+  wrap.innerHTML = `<ol>${items}</ol>`;
+}
+
+function lbShow(gameOver=true){
+  document.getElementById('lb-title').textContent = gameOver ? 'Game Over' : 'Leaderboard';
+  document.getElementById('lb-toast').classList.remove('hidden');
+}
+function lbHide(){ document.getElementById('lb-toast').classList.add('hidden'); }
 
 // Controls
 const pauseBtn = document.getElementById("pause-btn");
@@ -358,16 +405,22 @@ function randomShape(){
   };
 }
 
-
 function spawnPiece() {
   if (!nextPiece) nextPiece = randomShape();
   active = nextPiece;
   nextPiece = randomShape();
+
   if (collides(active, active.row, active.col)) {
     running = false;
-    alert("Game Over");
+    paused = true;
+    document.getElementById('lb-name').value = '';
+    document.getElementById('lb-entry').style.display = 'flex';
+    lbRender();
+    lbShow(true);
+    return;
   }
 }
+
 
 // --- COLLISION ---
 function collides(piece, row, col) {
@@ -695,6 +748,27 @@ leaveBtn.addEventListener("click", () => {
     window.location.href = "about:blank";
   }
 });
+document.getElementById('lb-save').addEventListener('click', ()=>{
+  const name = document.getElementById('lb-name').value;
+  lbAdd(name, score);
+  lbRender();
+  // after saving, hide entry row to prevent double-save
+  document.getElementById('lb-entry').style.display = 'none';
+});
+
+document.getElementById('lb-restart').addEventListener('click', ()=>{
+  // quick restart: reset state
+  field = []; active = null; nextPiece = null;
+  score = 0; totalLines = 0; level = 1; running = true; paused = false;
+  document.getElementById('score').textContent = 'Score: 0';
+  applyLevel(); // resets level/speed labels
+  initField(); spawnPiece(); render();
+  lbHide();
+});
+document.getElementById('lb-clear').addEventListener('click', ()=>{
+  lbSave([]); lbRender();
+});
+document.getElementById('lb-close').addEventListener('click', lbHide);
 
 // --- CONTROLS ---
 document.getElementById("left-btn").addEventListener("click", () => move(-1));
