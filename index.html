@@ -215,25 +215,8 @@ const BLOCK_SIZE = 30;
 const COLORS = ["cyan", "yellow", "purple", "green", "red", "blue", "orange"];
 const OPERATORS = ["+", "-", "×", "÷"];
 let totalLines = 0;
-const LEVEL_SPEEDS = [
-  650, // Level 1
-  620, // Level 2  (-30)
-  590, // Level 3  (-30)
-  550, // Level 4  (-40)
-  500, // Level 5  (-50)
-  450, // Level 6  (-50)
-  400, // Level 7  (-50)
-  350, // Level 8  (-50)
-  300, // Level 9  (-50)
-  250, // Level 10 (-50)
-  240, // Level 11 (-10)
-  230, // Level 12 (-10)
-  220, // Level 13 (-10)
-  210, // Level 14 (-10)
-  200  // Level 15 (-10)
-];
-
-const LINES_PER_LEVEL = 12;
+const LEVEL_SPEEDS = [650, 600, 550, 500, 510, 480, 450, 420, 390, 360, 330, 300, 270, 250, 230, 220, 200]; // ms/drop
+const LINES_PER_LEVEL = 5;
 
 const SHAPES = {
   I: [[1, 1, 1, 1]],
@@ -754,4 +737,3 @@ function debugPrintField(){
 
 </body>
 </html>
-
