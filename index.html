@@ -214,6 +214,9 @@ const BLOCK_SIZE = 30;
 
 const COLORS = ["cyan", "yellow", "purple", "green", "red", "blue", "orange"];
 const OPERATORS = ["+", "-", "×", "÷"];
+let totalLines = 0;
+const LEVEL_SPEEDS = [630, 600, 570, 540, 510, 480, 450, 420, 390, 360, 330, 300, 270, 250]; // ms/drop
+const LINES_PER_LEVEL = 12;
 
 const SHAPES = {
   I: [[1, 1, 1, 1]],
@@ -249,6 +252,14 @@ const clearBtn = document.getElementById("clear-btn");
 const submitBtn = document.getElementById("submit-btn");
 
 const exitToast = document.getElementById("exit-toast");
+
+
+function applyLevel(){
+  const sp = LEVEL_SPEEDS[Math.min(level-1, LEVEL_SPEEDS.length-1)];
+  dropInterval = sp;
+  document.getElementById('level').textContent = `Level: ${level}`;
+  document.getElementById('speed').textContent = `Speed: ${(sp/1000).toFixed(2)}s`;
+}
 
 // Controls
 const pauseBtn = document.getElementById("pause-btn");
@@ -409,23 +420,29 @@ function clearLines(){
 
   for (let r = ROWS - 1; r >= 0; r--) {
     const row = field[r];
-    const isFull = row.every(cell => cell);
-    if (!isFull) continue;
+    if (!row.every(cell => cell)) continue;
 
     const hasUnsolvedKey = row.some(cell => cell?.isKeyBlock && !cell.solved);
-    if (!hasUnsolvedKey) {
-      field.splice(r, 1);
-      field.unshift(Array(COLS).fill(null));
-      linesCleared++;
-      r++; // check the same row again after shift
-    }
+    if (hasUnsolvedKey) continue;
+
+    field.splice(r, 1);
+    field.unshift(Array(COLS).fill(null));
+    linesCleared++;
+    r++; // re-check same index after shift
   }
 
-  if (linesCleared) {
+  if (linesCleared){
     score += linesCleared * 100;
     document.getElementById("score").textContent = `Score: ${score}`;
+
+    totalLines += linesCleared;
+    while (totalLines >= level * LINES_PER_LEVEL) {
+      level++;
+      applyLevel();
+    }
   }
 }
+
 
 
 function collapseColumns(){
@@ -484,7 +501,8 @@ function rotate(){
   const m1=rotate2D(m0), e1=rotate2D(e0), k1=rotate2D(k0);
   const col0=active.col, kicks=[0,-1,1,-2,2];
   for (const dx of kicks){
-    if (!collides({ ...active, matrix:m1 }, active.row, col0+dx)){
+   if (!collides({ ...active, matrix:m1 }, active.row, col0+dx)){
+
       active.matrix=m1; active.equations=e1; active.keyMask=k1; active.col=col0+dx;
       // cancel any in-progress selection on rotate
       selectedCell = null;
@@ -699,6 +717,7 @@ function update(time = 0) {
 
 initField();
 spawnPiece();
+applyLevel();  
 render();
 update();
 function debugPrintField(){
