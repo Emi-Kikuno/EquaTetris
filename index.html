@@ -278,6 +278,11 @@ const submitBtn = document.getElementById("submit-btn");
 
 const exitToast = document.getElementById("exit-toast");
 
+function resetSolverUI(){
+  selectedCell = null;
+  equationInput.value = '';
+  solverToast.classList.add('hidden');
+}
 
 function applyLevel(){
   const sp = LEVEL_SPEEDS[Math.min(level-1, LEVEL_SPEEDS.length-1)];
@@ -419,6 +424,7 @@ function spawnPiece() {
   if (collides(active, active.row, active.col)) {
     running = false;
     paused = true;
+resetSolverUI(); 
     document.getElementById('lb-name').value = '';
     document.getElementById('lb-entry').style.display = 'flex';
     lbRender();
@@ -763,7 +769,8 @@ document.getElementById('lb-save').addEventListener('click', ()=>{
 });
 
 document.getElementById('lb-restart').addEventListener('click', ()=>{
-  // quick restart: reset state
+resetSolverUI(); 
+ 
   field = []; active = null; nextPiece = null;
   score = 0; totalLines = 0; level = 1; running = true; paused = false;
   document.getElementById('score').textContent = 'Score: 0';
