@@ -23,16 +23,12 @@
 
 <div id="bottom-bar">
   <button id="pause-btn" class="control-btn">⏸</button>
- <div class="move-controls">
-  <button id="left-btn" class="control-btn">⬅</button>
-  <button id="rotate-btn" class="control-btn">⟳</button>
-  <button id="right-btn" class="control-btn">➡</button>
-</div>
-
-<div class="harddrop-container">
-  <button id="drop-btn" class="control-btn">⬇⬇</button>
-</div>
-
+  <div id="move-controls">
+    <button id="left-btn" class="control-btn">◀</button>
+    <button id="rotate-btn" class="control-btn">⟳</button>
+    <button id="right-btn" class="control-btn">▶</button>
+    <button id="drop-btn" class="control-btn">⬇</button>
+  </div>
   <button id="exit-btn" class="control-btn">❌</button>
 </div>
 
@@ -131,18 +127,11 @@ background:#000;}
   background: rgba(255,255,255,0.4);
 }
 
-.move-controls {
+#move-controls {
   display: flex;
   justify-content: center;
-  gap: 5px; /* keep normal spacing */
+  gap: 15px; /* more spacing between buttons */
 }
-
-.harddrop-container {
-  display: flex;
-  justify-content: center;
-
-}
-
 
 #move-controls button {
   min-width: 48px; /* bigger tap area */
@@ -158,12 +147,14 @@ background:#000;}
   border-radius: 8px;
   z-index: 10;
 }
-#solver-toast {
-  transform: scale(1.15);
-  transform-origin: center bottom;
-}
+
 .toast.hidden {
   display: none;
+}
+
+#solver-toast {
+  transform: scale(1.25);
+  transform-origin: center bottom;
 }
 #lb-list { text-align:left; margin-top:8px; font-size:14px; }
 #lb-list ol { padding-left:18px; margin:6px 0; }
@@ -205,8 +196,7 @@ background:#000;}
 #drop-btn {
   background-color: #d62828; /* strong red */
   color: white;              /* make arrow stand out */
-  margin-left: 20px; /* pushes it further away from the right arrow */
-}
+  margin-left: 25px; /* pushes it further away from the right arrow */
 }
 #drop-btn:active {
   background-color: #a61e1e; /* darker red when pressed */
@@ -248,30 +238,11 @@ const ROWS = 20;
 const BLOCK_SIZE = 30;
 
 const COLORS = ["cyan", "yellow", "purple", "green", "red", "blue", "orange"];
-const OPERATORS = [" +", " -", " ×", "/"];
+const OPERATORS = ["+", "-", "×", "÷"];
 let totalLines = 0;
 const LEVEL_SPEEDS = [630, 600, 550, 500, 470, 440, 410, 390, 370, 350, 330, 310, 290, 280, 270, 260, 250, 240, 230, 220, 210, 200]; // ms/drop
 const LINES_PER_LEVEL = 10;
 
-let hardDropClicks = 0;
-let hardDropTimeout = null;
-
-
-// Hard drop confirmation function
-function hardDropConfirm() {
-  hardDropClicks++;
-
-  if (hardDropClicks === 1) {
-    // First click: start timer to reset
-    hardDropTimeout = setTimeout(() => hardDropClicks = 0, 1000); // 1 second window
-  } 
-  else if (hardDropClicks >= 3) {
-    // Third click within time: execute hard drop
-    clearTimeout(hardDropTimeout);
-    hardDropClicks = 0;
-    hardDrop();
-  }
-}
 const SHAPES = {
   I: [[1, 1, 1, 1]],
   O: [[1, 1], [1, 1]],
@@ -809,8 +780,7 @@ document.getElementById('lb-close').addEventListener('click', lbHide);
 document.getElementById("left-btn").addEventListener("click", () => move(-1));
 document.getElementById("right-btn").addEventListener("click", () => move(1));
 document.getElementById("rotate-btn").addEventListener("click", rotate);
-document.getElementById("drop-btn").addEventListener("click", hardDropConfirm);
-
+document.getElementById("drop-btn").addEventListener("click", hardDrop);
 
 // --- GAME LOOP ---
 let lastTime = 0;
@@ -847,4 +817,3 @@ function debugPrintField(){
 
 </body>
 </html>
-
